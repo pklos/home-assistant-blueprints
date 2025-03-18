@@ -1,0 +1,136 @@
+blueprint:
+  name: Motion-activated with brightness and Light Sensor
+  description: Turn the light on based on motion and ambient light levels, using different brightness settings for day and night.
+  domain: automation
+  input:
+    motion_entity:
+      name: Motion Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+    light_target:
+      name: Light
+      selector:
+        target:
+          entity:
+            domain: light
+    light_sensor_entity:
+      name: Light Sensor
+      description: The sensor that measures ambient light (lux).
+      selector:
+        entity:
+          domain: sensor
+    light_threshold:
+      name: Light Sensor Threshold
+      description: The maximum light level (lux) at which the automation will turn on the light.
+      default: 20
+      selector:
+        number:
+          min: 0
+          max: 1000
+          step: 1
+          mode: slider
+    on_night_time:
+      name: (Required) On Time Night
+      description: The time when the night mode starts.
+      selector:
+        time: {}
+    off_night_time:
+      name: (Required) Off Time Night
+      description: The time when the night mode ends.
+      selector:
+        time: {}
+    day_brightness:
+      name: Day brightness
+      description: Brightness in daytime mode
+      default: 100
+      selector:
+        number:
+          min: 1.0
+          max: 100.0
+          step: 1.0
+          mode: slider
+    night_brightness:
+      name: Night brightness
+      description: Brightness in night mode
+      default: 15
+      selector:
+        number:
+          min: 1.0
+          max: 100.0
+          step: 1.0
+          mode: slider
+    no_motion_wait_day:
+      name: Wait time day
+      description: Time to leave the light on after detecting the last movement for daytime mode.
+      default: 120
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+    no_motion_wait_night:
+      name: Wait time night
+      description: Time to leave the light on after detecting the last movement in night mode
+      default: 30
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+
+mode: restart
+max_exceeded: silent
+
+trigger:
+  platform: state
+  entity_id: !input motion_entity
+  from: "off"
+  to: "on"
+
+condition:
+  - condition: numeric_state
+    entity_id: !input light_sensor_entity
+    below: !input light_threshold
+
+action:
+  - choose:
+      - conditions:
+          - condition: time
+            after: !input on_night_time
+            before: !input off_night_time
+        sequence:
+          - alias: "Turn on the light"
+            service: light.turn_on
+            data:
+              brightness_pct: !input night_brightness
+            target: !input light_target
+          - alias: "Wait until there is no motion from device"
+            wait_for_trigger:
+              platform: state
+              entity_id: !input motion_entity
+              from: "on"
+              to: "off"
+          - alias: "Wait the number of seconds that has been set"
+            delay: !input no_motion_wait_night
+          - alias: "Turn off the light"
+            service: light.turn_off
+            target: !input light_target
+    default:
+      - alias: "Turn on the light"
+        service: light.turn_on
+        data:
+          brightness_pct: !input day_brightness
+        target: !input light_target
+      - alias: "Wait until there is no motion from device"
+        wait_for_trigger:
+          platform: state
+          entity_id: !input motion_entity
+          from: "on"
+          to: "off"
+      - alias: "Wait the number of seconds that has been set"
+        delay: !input no_motion_wait_day
+      - alias: "Turn off the light"
+        service: light.turn_off
+        target: !input light_target
