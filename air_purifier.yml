@@ -7,6 +7,7 @@ blueprint:
       name: Pollution
       selector:
         entity:
-          domain: air_quality
+          domain: sensor
+          device_class: air_quality
         
     
