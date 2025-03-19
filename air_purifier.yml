@@ -1,13 +1,115 @@
 blueprint:
   name: Air purifier controlled with air pollution sensor
-  description: Turn on, set fan speed and turn off an air purifier using pollution sensor as control signal source.
+  description: >
+    Turn on, set fan speed and turn off an air purifier using a PM2.5 sensor.
+    The purifier will run at LOW speed when the sensor value is above the slow threshold,
+    at MEDIUM when above the medium threshold, and at HIGH when above the high threshold.
+    If the sensor value drops below the off threshold, the purifier will be turned off.
   domain: automation
   input:
     pollution_sensor:
-      name: Pollution
+      name: Pollution sensor
       selector:
         entity:
           domain: sensor
-          device_class: air_quality
-        
-    
+          device_class: pm25
+          multiple: false
+    air_purifier:
+      name: Air Purifier
+      selector:
+        entity:
+          domain: fan
+          multiple: true
+    off_threshold:
+      name: Off threshold
+      description: PM2.5 value below which the purifier will be turned off.
+      default: 8
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          mode: slider
+    slow_threshold:
+      name: Slow mode threshold
+      description: PM2.5 value resulting in the purifier being switched on in LOW mode.
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          mode: slider
+    medium_threshold:
+      name: Medium mode threshold
+      description: PM2.5 value resulting in the purifier being switched on in MEDIUM mode.
+      default: 25
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          mode: slider
+    high_threshold:
+      name: High mode threshold
+      description: PM2.5 value resulting in the purifier being switched on in HIGH mode.
+      default: 50
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          mode: slider
+
+trigger:
+  platform: state
+  entity_id: !input pollution_sensor
+  attribute: environment.pm2_5_density
+
+action:
+  - choose:
+      - conditions:
+          - condition: numeric_state
+            entity_id: !input pollution_sensor
+            attribute: environment.pm2_5_density
+            above: !input high_threshold
+        sequence:
+          - alias: "Set purifier to HIGH mode"
+            service: fan.turn_on
+            target:
+              entity_id: !input air_purifier
+            data:
+              percentage: 100
+      - conditions:
+          - condition: numeric_state
+            entity_id: !input pollution_sensor
+            attribute: environment.pm2_5_density
+            above: !input medium_threshold
+            below: !input high_threshold
+        sequence:
+          - alias: "Set purifier to MEDIUM mode"
+            service: fan.turn_on
+            target:
+              entity_id: !input air_purifier
+            data:
+              percentage: 66
+      - conditions:
+          - condition: numeric_state
+            entity_id: !input pollution_sensor
+            attribute: environment.pm2_5_density
+            above: !input slow_threshold
+            below: !input medium_threshold
+        sequence:
+          - alias: "Set purifier to LOW mode"
+            service: fan.turn_on
+            target:
+              entity_id: !input air_purifier
+            data:
+              percentage: 33
+    default:
+      - alias: "Turn off purifier"
+        service: fan.turn_off
+        target:
+          entity_id: !input air_purifier
+
+mode: restart
