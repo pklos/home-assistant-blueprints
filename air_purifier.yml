@@ -1,0 +1,12 @@
+blueprint:
+  name: Air purifier controlled with air pollution sensor
+  description: Turn on, set fan speed and turn off an air purifier using pollution sensor as control signal source.
+  domain: automation
+  input:
+    pollution_sensor:
+      name: Pollution
+      selector:
+        entity:
+          domain: air_quality
+          device_class: sensor
+    
