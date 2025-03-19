@@ -8,5 +8,5 @@ blueprint:
       selector:
         entity:
           domain: air_quality
-          device_class: sensor
+        
     
