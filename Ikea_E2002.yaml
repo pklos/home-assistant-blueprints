@@ -21,9 +21,9 @@ blueprint:
       name: Kolejność lamp
       description: Lista encji typu light, które mają być sterowane kolejno.
       selector:
-        entity:
-          domain: light
-          multiple: true
+        target:
+          entity:
+            domain: light
     helper_state:
       name: Helper sekwencji
       description: Encja pomocnicza (np. input_number) przechowująca liczbę aktualnie włączonych lamp. Ustaw wartość początkową na 0.
