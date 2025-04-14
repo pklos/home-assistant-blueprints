@@ -1,7 +1,7 @@
 blueprint:
   name: IKEA E2002 – sekwencyjne włączanie/wyłączanie lamp (Zigbee2MQTT)
   description: >
-    Ten blueprint umożliwia sekwencyjne włączanie i wyłączanie lamp przy użyciu przełącznika IKEA E2002
+    Ten blueprint umożliwia sekwencyjne włączanie i wyłączanie lamp przy użyciu przełącznika IKEA E2002,
     zintegrowanego przez Zigbee2MQTT. Komunikat MQTT powinien być w formacie JSON i zawierać pole `action`
     z wartością:
       - on – wciśnięcie górnej ikony,
@@ -28,7 +28,8 @@ blueprint:
             domain: light
     helper_state:
       name: Helper sekwencji
-      description: Encja pomocnicza (np. input_number), przechowująca liczbę aktualnie włączonych lamp. Ustaw wartość początkową na 0.
+      description: Encja pomocnicza (np. input_number), przechowująca liczbę aktualnie włączonych lamp.
+                   Ustaw wartość początkową na 0.
       selector:
         entity:
           domain: input_number
@@ -45,7 +46,8 @@ action:
             value_template: "{{ trigger.payload_json.action == 'on' }}"
         sequence:
           - variables:
-              current_on: "{{ states(helper_state) | int }}"
+              helper: !input helper_state
+              current_on: "{{ states(helper) | int }}"
               total: "{{ (lamp_sequence.entity_id) | length }}"
           - choose:
               - conditions:
@@ -70,7 +72,8 @@ action:
             value_template: "{{ trigger.payload_json.action == 'off' }}"
         sequence:
           - variables:
-              current_on: "{{ states(helper_state) | int }}"
+              helper: !input helper_state
+              current_on: "{{ states(helper) | int }}"
           - choose:
               - conditions:
                   - condition: template
