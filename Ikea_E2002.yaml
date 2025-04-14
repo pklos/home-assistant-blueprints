@@ -57,11 +57,11 @@ action:
                     data:
                       entity_id: !input helper_state
                       value: "{{ current_on + 1 }}"
-              - default:
-                  - service: persistent_notification.create
-                    data:
-                      title: "IKEA E2002"
-                      message: "Wszystkie lampy są już włączone."
+            default:
+              - service: persistent_notification.create
+                data:
+                  title: "IKEA E2002"
+                  message: "Wszystkie lampy są już włączone."
       # Akcja OFF – sekwencyjne wyłączanie lamp (w odwrotnej kolejności)
       - conditions:
           - condition: template
@@ -83,11 +83,11 @@ action:
                     data:
                       entity_id: !input helper_state
                       value: "{{ current_on - 1 }}"
-              - default:
-                  - service: persistent_notification.create
-                    data:
-                      title: "IKEA E2002"
-                      message: "Brak włączonych lamp do wyłączenia."
+            default:
+              - service: persistent_notification.create
+                data:
+                  title: "IKEA E2002"
+                  message: "Brak włączonych lamp do wyłączenia."
       # Akcja hold brightness_move_up – ustaw wszystkie lampy na 100% jasności
       - conditions:
           - condition: template
