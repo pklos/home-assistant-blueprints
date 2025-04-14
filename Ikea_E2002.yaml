@@ -8,7 +8,7 @@ blueprint:
       - off – wciśnięcie dolnej ikony,
       - brightness_move_up – przytrzymanie górnej ikony,
       - brightness_move_down – przytrzymanie dolnej ikony.
-    Automatyzacja korzysta z pomocniczej encji (np. input_number) do przechowywania liczby włączonych lamp.
+    Automatyzacja korzysta z pomocniczej encji (input_number) do przechowywania liczby włączonych lamp.
   domain: automation
   input:
     mqtt_topic:
@@ -21,14 +21,14 @@ blueprint:
       name: Kolejność lamp
       description: Lista encji typu light, które mają być sterowane kolejno.
       default:
-        entity_id: []  # Upewnij się, że wybierzesz co najmniej jedną lampę!
+        entity_id: []  # W konfiguracji wybierz co najmniej jedną lampę!
       selector:
         target:
           entity:
             domain: light
     helper_state:
       name: Helper sekwencji
-      description: Encja pomocnicza (np. input_number), przechowująca liczbę aktualnie włączonych lamp. Ustaw wartość początkową na 0.
+      description: Encja pomocnicza (input_number) przechowująca liczbę aktualnie włączonych lamp. Ustaw wartość początkową na 0.
       selector:
         entity:
           domain: input_number
@@ -57,8 +57,9 @@ action:
                     target:
                       entity_id: "{{ (lamp_sequence.entity_id)[current_on] }}"
                   - service: input_number.set_value
+                    target:
+                      entity_id: "{{ helper }}"
                     data:
-                      entity_id: !input helper_state
                       value: "{{ current_on + 1 }}"
             default:
               - service: persistent_notification.create
@@ -84,8 +85,9 @@ action:
                     target:
                       entity_id: "{{ (lamp_sequence.entity_id)[index_to_turn_off] }}"
                   - service: input_number.set_value
+                    target:
+                      entity_id: "{{ helper }}"
                     data:
-                      entity_id: !input helper_state
                       value: "{{ current_on - 1 }}"
             default:
               - service: persistent_notification.create
@@ -111,4 +113,3 @@ action:
             target:
               entity_id: "{{ lamp_sequence.entity_id }}"
     default: []
-``
