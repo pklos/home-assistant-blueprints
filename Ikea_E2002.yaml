@@ -2,8 +2,8 @@ blueprint:
   name: IKEA E2002 – sekwencyjne włączanie/wyłączanie lamp (Zigbee2MQTT)
   description: >
     Ten blueprint umożliwia sekwencyjne włączanie i wyłączanie lamp przy użyciu przełącznika IKEA E2002
-    zintegrowanego przez Zigbee2MQTT. Komunikat MQTT powinien być w formacie JSON i zawierać pole `action` 
-    z wartością: 
+    zintegrowanego przez Zigbee2MQTT. Komunikat MQTT powinien być w formacie JSON i zawierać pole `action`
+    z wartością:
       - on – wciśnięcie górnej ikony,
       - off – wciśnięcie dolnej ikony,
       - brightness_move_up – przytrzymanie górnej ikony,
@@ -44,7 +44,7 @@ action:
         sequence:
           - variables:
               current_on: "{{ states(helper_state) | int }}"
-              total: "{{ lamp_sequence | length }}"
+              total: "{{ (lamp_sequence.entity_id) | length }}"
           - choose:
               - conditions:
                   - condition: template
@@ -52,7 +52,7 @@ action:
                 sequence:
                   - service: light.turn_on
                     target:
-                      entity_id: "{{ lamp_sequence[current_on] }}"
+                      entity_id: "{{ (lamp_sequence.entity_id)[current_on] }}"
                   - service: input_number.set_value
                     data:
                       entity_id: !input helper_state
@@ -78,7 +78,7 @@ action:
                       index_to_turn_off: "{{ current_on - 1 }}"
                   - service: light.turn_off
                     target:
-                      entity_id: "{{ lamp_sequence[index_to_turn_off] }}"
+                      entity_id: "{{ (lamp_sequence.entity_id)[index_to_turn_off] }}"
                   - service: input_number.set_value
                     data:
                       entity_id: !input helper_state
@@ -96,14 +96,12 @@ action:
           - service: light.turn_on
             data:
               brightness_pct: 100
-            target:
-              entity_id: !input lamp_sequence
+            target: !input lamp_sequence
       # Akcja hold brightness_move_down – wyłącz wszystkie lampy
       - conditions:
           - condition: template
             value_template: "{{ trigger.payload_json.action == 'brightness_move_down' }}"
         sequence:
           - service: light.turn_off
-            target:
-              entity_id: !input lamp_sequence
+            target: !input lamp_sequence
     default: []
