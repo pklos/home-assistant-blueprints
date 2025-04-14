@@ -20,6 +20,8 @@ blueprint:
     lamp_sequence:
       name: Kolejność lamp
       description: Lista encji typu light, które mają być sterowane kolejno.
+      default:
+        entity_id: []  # Pamiętaj – w konfiguracji interfejsu musisz wybrać co najmniej jedną lampę!
       selector:
         target:
           entity:
