@@ -21,14 +21,14 @@ blueprint:
       name: Kolejność lamp
       description: Lista encji typu light, które mają być sterowane kolejno.
       default:
-        entity_id: []  # Pamiętaj – w konfiguracji interfejsu musisz wybrać co najmniej jedną lampę!
+        entity_id: []  # W konfiguracji wybierz co najmniej jedną lampę!
       selector:
         target:
           entity:
             domain: light
     helper_state:
       name: Helper sekwencji
-      description: Encja pomocnicza (np. input_number) przechowująca liczbę aktualnie włączonych lamp. Ustaw wartość początkową na 0.
+      description: Encja pomocnicza (np. input_number), przechowująca liczbę aktualnie włączonych lamp. Ustaw wartość początkową na 0.
       selector:
         entity:
           domain: input_number
@@ -98,12 +98,14 @@ action:
           - service: light.turn_on
             data:
               brightness_pct: 100
-            target: !input lamp_sequence
+            target:
+              entity_id: "{{ lamp_sequence.entity_id }}"
       # Akcja hold brightness_move_down – wyłącz wszystkie lampy
       - conditions:
           - condition: template
             value_template: "{{ trigger.payload_json.action == 'brightness_move_down' }}"
         sequence:
           - service: light.turn_off
-            target: !input lamp_sequence
+            target:
+              entity_id: "{{ lamp_sequence.entity_id }}"
     default: []
