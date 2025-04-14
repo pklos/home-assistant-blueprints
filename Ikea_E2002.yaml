@@ -16,15 +16,14 @@ blueprint:
       description: Temat, na którym nasłuchujemy wiadomości z Zigbee2MQTT od przełącznika.
       default: "zigbee2mqtt/ikea_e2002"
       selector:
-        text:
+        text: {}
     lamp_sequence:
       name: Kolejność lamp
       description: Lista encji typu light, które mają być sterowane kolejno.
       selector:
-        target:
-          entity:
-            domain: light
-            multiple: true
+        entity:
+          domain: light
+          multiple: true
     helper_state:
       name: Helper sekwencji
       description: Encja pomocnicza (np. input_number) przechowująca liczbę aktualnie włączonych lamp. Ustaw wartość początkową na 0.
